@@ -1,0 +1,11 @@
+beautifulsoup4==4.13.4
+certifi==2025.8.3
+charset-normalizer==3.4.3
+idna==3.10
+lxml==6.0.0
+plyer==2.1.0
+requests==2.32.4
+schedule==1.2.2
+soupsieve==2.7
+typing_extensions==4.14.1
+urllib3==2.5.0
