@@ -1,10 +1,23 @@
 # EBay scraper
 
-import requests
+from config import  PRODUCT_KEYWORDS
+from scraper import EbayScraper
+
+def main():
+
+    scraper = EbayScraper()
+    response = scraper.search(PRODUCT_KEYWORDS[0])
+    
+    if response.status_code == 200:
+        print("Success Ebay Page found")
+    else:
+        print(f"Failed! Status: {response.status_code}")
 
 
-x = requests.get('https://w3schools.com/python/demopage.htm')
-x = requests.get("https://automatetheboringstuff.com/")
 
-print(x.text)
-print("kurwa")
+
+
+
+
+if __name__ == "__main__":
+    main()
