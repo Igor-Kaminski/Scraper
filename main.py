@@ -22,14 +22,14 @@ def main():
     logging.info("Scraper Created")
     response = scraper.search(PRODUCT_KEYWORDS[0])
     
-    
     if response.status_code == 200:
-        
+        logging.info(f"Request successful: Status {response.status_code}")
         listings = parse_listings(response.content)
         my_listing_standing(MY_BASE_PRICE,MY_DELIEVERY_COST,listings)
         #print_listings(listings)
     else:
-        print(f"Failed! Status: {response.status_code}")
+        logging.warning(f"Request failed! Status: {response.status_code}")
+        
 
 
 if __name__ == "__main__":
