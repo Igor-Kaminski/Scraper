@@ -3,8 +3,10 @@ Analyser of HTML
 '''
 
 from bs4 import BeautifulSoup
+from plyer import notification
 import logging
 import re
+
 
 def clean_price(price_text):
     if not price_text:
@@ -95,6 +97,11 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
     if len(cheaper_listings) > 0:
         logging.info(f"{len(cheaper_listings)} cheaper listings found")
         print("Cheaper listings have been found:\n")
+        notification.notify(
+            title='🚨 Price Alert!',
+            message=f'{len(cheaper_listings)} competitors cheaper than you!',
+            timeout=10
+        )
         for i, listing in enumerate(cheaper_listings, 1):
             logging.info(f"Cheaper listing {i}: {listing['title']} — £{listing['price']:.2f}")
             print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
