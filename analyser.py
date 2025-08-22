@@ -87,6 +87,11 @@ def print_listings(listings):
         print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
 
 def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
+    if not listings:
+        print("No listings found")
+        logging.error("No listings found | comparison between your cheapest product unsucessful")
+        return
+
     cheaper_listings = []
     real_price = float(MY_BASE_PRICE + MY_DELIEVERY_COST)
     
