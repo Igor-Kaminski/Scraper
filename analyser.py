@@ -2,9 +2,8 @@
 Analyser of HTML
 '''
 
-import enum
 from bs4 import BeautifulSoup
-
+import logging
 import re
 
 def clean_price(price_text):
@@ -46,6 +45,7 @@ def parse_listings(html):
             if title not in seen:
                 listings.append({'title': title, 'price': total_price})
                 seen.add(title)
+                logging.debug(f"Added listing: {title} — £{total_price:.2f}")
 
     for item in soup.select('.s-item'):
         title_el = item.select_one('.s-item__title')
@@ -70,8 +70,11 @@ def parse_listings(html):
             if title not in seen:
                 listings.append({'title': title, 'price': total_price})
                 seen.add(title)
+                logging.debug(f"Added listing: {title} — £{total_price:.2f}")
 
     listings.sort(key=lambda x: x['price'])
+    logging.info(f"Total listings parsed: {len(listings)}")
+
     return listings
 
 def print_listings(listings):
@@ -88,10 +91,13 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
     for x in listings:
         if x["price"] < real_price:
             cheaper_listings.append(x)
+
     if len(cheaper_listings) > 0:
+        logging.info(f"{len(cheaper_listings)} cheaper listings found")
         print("Cheaper listings have been found:\n")
         for i, listing in enumerate(cheaper_listings, 1):
+            logging.info(f"Cheaper listing {i}: {listing['title']} — £{listing['price']:.2f}")
             print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
     else:
+        logging.info("No cheaper listings found")
         print("None were lower lets go!")
-        
