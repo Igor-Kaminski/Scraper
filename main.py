@@ -1,8 +1,8 @@
 # EBay scraper
 
-from config import  PRODUCT_KEYWORDS
+from config import  PRODUCT_KEYWORDS, MY_BASE_PRICE, MY_DELIEVERY_COST
 from scraper import EbayScraper
-from analyser import parse_listings, print_listings
+from analyser import my_listing_standing, parse_listings, print_listings
 
 def main():
     scraper = EbayScraper()
@@ -10,7 +10,8 @@ def main():
     
     if response.status_code == 200:
         listings = parse_listings(response.content)
-        print_listings(listings)
+        my_listing_standing(MY_BASE_PRICE,MY_DELIEVERY_COST,listings)
+        #print_listings(listings)
     else:
         print(f"Failed! Status: {response.status_code}")
 
