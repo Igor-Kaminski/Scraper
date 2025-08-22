@@ -1,8 +1,13 @@
+'''
+Analyser of HTML
+'''
+
+import enum
 from bs4 import BeautifulSoup
+
 import re
 
 def clean_price(price_text):
-    """Extract the first numeric value from a price string."""
     if not price_text:
         return None
     price_text = price_text.replace(' ', '')
@@ -75,3 +80,18 @@ def print_listings(listings):
         return
     for i, listing in enumerate(listings, 1):
         print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
+
+def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
+    cheaper_listings = []
+    real_price = float(MY_BASE_PRICE + MY_DELIEVERY_COST)
+    
+    for x in listings:
+        if x["price"] < real_price:
+            cheaper_listings.append(x)
+    if len(cheaper_listings) > 0:
+        print("Cheaper listings have been found:\n")
+        for i, listing in enumerate(cheaper_listings, 1):
+            print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
+    else:
+        print("None were lower lets go!")
+        
