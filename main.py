@@ -6,10 +6,14 @@ from analyser import my_listing_standing, parse_listings, print_listings
 import logging
 import os
 
-os.makedirs("logs", exist_ok=True)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+LOG_DIR = os.path.join(SCRIPT_DIR, 'logs')
+
+os.makedirs(LOG_DIR, exist_ok=True)
 
 logging.basicConfig(
-    filename = "logs/scraper.log",
+    filename=os.path.join(LOG_DIR, 'scraper.log'),
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
