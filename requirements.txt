@@ -1,9 +1,11 @@
 beautifulsoup4==4.13.4
 certifi==2025.8.3
 charset-normalizer==3.4.3
+fake-useragent==2.2.0
 idna==3.10
 lxml==6.0.0
 plyer==2.1.0
+PySocks==1.7.1
 requests==2.32.4
 schedule==1.2.2
 soupsieve==2.7

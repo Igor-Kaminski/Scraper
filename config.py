@@ -2,8 +2,6 @@
 CONFIG SETTINGS
 '''
 
-
-
 HEADERS = {
     "authority": "www.ebay.co.uk",
     "method": "GET",
@@ -28,10 +26,9 @@ HEADERS = {
 }
 
 
-
 PRODUCT_KEYWORDS = ['retimax 1500'] 
 MY_BASE_PRICE = 6.95                     
-MY_DELIEVERY_COST = 0               
+MY_DELIEVERY_COST = 0          
 
 # Scraping settings
 REQUEST_DELAY = 3          
