@@ -27,9 +27,14 @@ HEADERS = {
 
 
 PRODUCT_KEYWORDS = ['retimax 1500'] 
-MY_BASE_PRICE = 6.95                     
+MY_BASE_PRICE = 800             
 MY_DELIEVERY_COST = 0          
 
 # Scraping settings
 REQUEST_DELAY = 3          
 CHECK_INTERVAL = 3600
+
+# Notification settings
+NOTIFICATION_TITLE = '🚨 Price Alert!'
+NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!'
+NOTIFICATION_TIMEOUT = 10
