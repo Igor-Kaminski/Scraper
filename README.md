@@ -8,6 +8,7 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 - **Monitors competitor prices** in real-time
 - **Desktop notifications** when someone undercuts you
 - **Logs all activity** for tracking and analysis
+- **Runs as daemon** - continuous background monitoring (optional)
 
 
 ## **Features**
@@ -17,6 +18,8 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 - **Desktop alerts** - Instant notifications when competition is found
 - **Comprehensive logging** - Track all monitoring activity
 - **Configurable settings** - Easy to modify products and prices
+- **Built-in daemon mode** - Run continuously in background
+- **Flexible scheduling** - Choose between one-time or continuous monitoring
 
 ## **Requirements**
 
@@ -50,11 +53,15 @@ pip install -r requirements.txt
 ```
 
 ### **4. Configure your settings**
-Edit `config.py` with your product details and notification preferences:
+Edit `config.py` with your product details and preferences:
 ```python
 PRODUCT_KEYWORDS = ['your product name']
 MY_BASE_PRICE = <your price>
 MY_DELIEVERY_COST = <your delievery cost>
+
+# Scheduler settings
+SCHEDULER = False  # False = run once, True = run as daemon
+CHECK_INTERVAL = 3600  # How often to check (seconds) 
 
 # Notification settings
 NOTIFICATION_TITLE = '🚨 Price Alert!'
@@ -64,9 +71,22 @@ NOTIFICATION_TIMEOUT = 10
 
 ## 🎮 **Usage**
 
-### **Basic Usage**
+### **Run Once (Default)**
 ```bash
 python main.py
+```
+- Checks prices once and exits
+- Perfect for cron jobs or manual runs
+
+### **Run as Daemon**
+1. Set `SCHEDULER = True` in `config.py`
+2. Run `python main.py`
+3. Press `Ctrl+C` to stop gracefully
+
+```bash
+python main.py
+# Output: Starting daemon mode - checking every 3600 seconds
+# Press Ctrl+C to stop
 ```
 
 ### **What Happens**
@@ -75,31 +95,41 @@ python main.py
 3. **Compares to your price** and identifies cheaper competitors
 4. **Shows desktop notification** if competition is found
 5. **Logs everything** to `logs/scraper.log`
+6. **Repeats** every hour (if daemon mode enabled)
 
 ## ⏱️ **Automation**
 
-### **Linux / macOS**
-Use `cron` to run the scraper automatically:
+### **Option 1: Built-in Daemon (Recommended)**
+Enable the built-in daemon mode for continuous monitoring:
 
+1. Set `SCHEDULER = True` in `config.py`
+2. Run `python main.py`
+3. The daemon runs continuously until stopped with `Ctrl+C`
+
+**Benefits:**
+- ✅ **No external setup** - works out of the box
+- ✅ **Easy to start/stop** - just run the script
+- ✅ **Configurable timing** - adjust `CHECK_INTERVAL` as needed
+- ✅ **Graceful shutdown** - handles `Ctrl+C` properly
+
+### **Option 2: External Schedulers**
+
+#### **Linux / macOS (Cron)**
 ```bash
 crontab -e
 # Add the following line to run every hour
 0 * * * * /full/path/to/.venv/bin/python /full/path/to/main.py >> /full/path/to/logs/cron.log 2>&1
 ```
 
-### **Windows**
-Use Task Scheduler to run main.py every hour:
-
+#### **Windows (Task Scheduler)**
 1. Open **Task Scheduler** → **Create Task**
 2. Set **Trigger** → **Daily** → **Repeat task every 1 hour**
 3. Set **Action** → **Start a program** → **Program**: `python.exe`, **Arguments**: `main.py`
 
 **Notes:**
-- Replace `/full/path/to/` with the absolute path to your project and virtual environment
-- `>> cron.log 2>&1` ensures all output and errors are logged
-- Cron runs your script even if the terminal is closed
-- The task runs even if your PC is locked
-- Make sure the paths use full absolute paths
+- Use external schedulers only if you prefer `SCHEDULER = False`
+- Replace `/full/path/to/` with the absolute path to your project
+- External schedulers work with one-time runs only
 
 
 
@@ -124,39 +154,16 @@ ebay-price-monitor/
 - `MY_BASE_PRICE`: Your selling price
 - `MY_DELIEVERY_COST`: Your shipping cost
 
+### **Scheduler Settings**
+- `SCHEDULER`: Run mode - `False` for one-time, `True` for daemon
+- `CHECK_INTERVAL`: How often to check prices (seconds) 
+
 ### **Notification Settings**
 - `NOTIFICATION_TITLE`: Title of the desktop alert
 - `NOTIFICATION_MESSAGE`: Message text (use `{count}` for number of cheaper listings)
 - `NOTIFICATION_TIMEOUT`: How long the notification stays visible (in seconds)
 
 
-## 🔧 **Customization**
-
-### **Add New Products**
-```python
-# In config.py
-PRODUCT_KEYWORDS = ['product 1', 'product 2', 'product 3']
-```
-
-### **Change Price Thresholds**
-```python
-# In config.py
-MY_BASE_PRICE = 25.99
-MY_DELIEVERY_COST = 5.99
-```
-
-### **Modify Notification Settings**
-```python
-# In config.py, customize your notification preferences
-NOTIFICATION_TITLE = '🚨 Price Alert!'
-NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!'
-NOTIFICATION_TIMEOUT = 10  # Show for 10 seconds
-
-# Examples:
-NOTIFICATION_TITLE = 'Competition Alert!'
-NOTIFICATION_MESSAGE = 'Found {count} cheaper listings!'
-NOTIFICATION_TIMEOUT = 15  # Show for 15 seconds
-```
 
 ## ⚠️ **Important Notes**
 
