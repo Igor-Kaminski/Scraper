@@ -2,6 +2,22 @@
 CONFIG SETTINGS
 '''
 
+PRODUCT_KEYWORDS = ['retimax 1500']  # Product to monitor - only one product can be monitored at a time
+MY_BASE_PRICE = 100            
+MY_DELIEVERY_COST = 0  # Set to 0 if you offer free shipping, otherwise add your shipping cost
+
+# Scheduler settings
+SCHEDULER = False  # False = run once and exit, True = run as background daemon
+CHECK_INTERVAL = 3600  # How often to check prices (seconds) 
+
+# Notification settings
+NOTIFICATION_TITLE = '🚨 Price Alert!'
+NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!' # Message text, use {count} to show number of cheaper competitors found
+NOTIFICATION_TIMEOUT = 10 # How long the notification stays visible on screen (seconds)
+
+# =============================================================================
+# HTTP HEADERS - these worked well for me
+# =============================================================================
 HEADERS = {
     "authority": "www.ebay.co.uk",
     "method": "GET",
@@ -24,17 +40,3 @@ HEADERS = {
     "upgrade-insecure-requests": "1",
     "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.3"
 }
-
-
-PRODUCT_KEYWORDS = ['retimax 1500'] 
-MY_BASE_PRICE = 800             
-MY_DELIEVERY_COST = 0          
-
-# Scheduler settings
-SCHEDULER = True  # False = run once and exit, True = run as background daemon
-CHECK_INTERVAL = 3600  # How often to check prices (seconds)
-
-# Notification settings
-NOTIFICATION_TITLE = '🚨 Price Alert!'
-NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!'
-NOTIFICATION_TIMEOUT = 10
