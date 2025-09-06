@@ -2,7 +2,7 @@
 CONFIG SETTINGS
 '''
 
-PRODUCT_KEYWORDS = ['retimax 1500']  # Product to monitor - only one product can be monitored at a time
+PRODUCT_KEYWORDS = ['your_item_name']  # Product to monitor - only one product can be monitored at a time
 MY_BASE_PRICE = 100            
 MY_DELIEVERY_COST = 0  # Set to 0 if you offer free shipping, otherwise add your shipping cost
 
