@@ -50,11 +50,16 @@ pip install -r requirements.txt
 ```
 
 ### **4. Configure your settings**
-Edit `config.py` with your product details:
+Edit `config.py` with your product details and notification preferences:
 ```python
 PRODUCT_KEYWORDS = ['your product name']
 MY_BASE_PRICE = <your price>
 MY_DELIEVERY_COST = <your delievery cost>
+
+# Notification settings
+NOTIFICATION_TITLE = '🚨 Price Alert!'
+NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!'
+NOTIFICATION_TIMEOUT = 10
 ```
 
 ## 🎮 **Usage**
@@ -119,6 +124,11 @@ ebay-price-monitor/
 - `MY_BASE_PRICE`: Your selling price
 - `MY_DELIEVERY_COST`: Your shipping cost
 
+### **Notification Settings**
+- `NOTIFICATION_TITLE`: Title of the desktop alert
+- `NOTIFICATION_MESSAGE`: Message text (use `{count}` for number of cheaper listings)
+- `NOTIFICATION_TIMEOUT`: How long the notification stays visible (in seconds)
+
 
 ## 🔧 **Customization**
 
@@ -137,12 +147,15 @@ MY_DELIEVERY_COST = 5.99
 
 ### **Modify Notification Settings**
 ```python
-# In analyser.py, modify the notification.notify() call
-notification.notify(
-    title='Your Custom Title',
-    message='Your custom message',
-    timeout=15  # Show for 15 seconds
-)
+# In config.py, customize your notification preferences
+NOTIFICATION_TITLE = '🚨 Price Alert!'
+NOTIFICATION_MESSAGE = '{count} competitors cheaper than you!'
+NOTIFICATION_TIMEOUT = 10  # Show for 10 seconds
+
+# Examples:
+NOTIFICATION_TITLE = 'Competition Alert!'
+NOTIFICATION_MESSAGE = 'Found {count} cheaper listings!'
+NOTIFICATION_TIMEOUT = 15  # Show for 15 seconds
 ```
 
 ## ⚠️ **Important Notes**
