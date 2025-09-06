@@ -1,10 +1,13 @@
 # EBay scraper
 
-from config import  PRODUCT_KEYWORDS, MY_BASE_PRICE, MY_DELIEVERY_COST
+from config import PRODUCT_KEYWORDS, MY_BASE_PRICE, MY_DELIEVERY_COST, SCHEDULER, CHECK_INTERVAL
 from scraper import EbayScraper
 from analyser import my_listing_standing, parse_listings, print_listings
 import logging
 import os
+import time
+import signal
+import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,7 +24,12 @@ logging.basicConfig(
 
 logging.info("Logging started")
 
-def main():
+def signal_handler(sig, frame):
+    logging.info("Received shutdown signal (Ctrl+C)")
+    print("\nShutting down gracefully...")
+    sys.exit(0)
+
+def run_once():
     scraper = EbayScraper()
     logging.info("Scraper Created")
     response = scraper.search(PRODUCT_KEYWORDS[0])
@@ -29,10 +37,54 @@ def main():
     if response.status_code == 200:
         logging.info(f"Request successful: Status {response.status_code}")
         listings = parse_listings(response.content)
-        my_listing_standing(MY_BASE_PRICE,MY_DELIEVERY_COST,listings)
+        my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings)
         #print_listings(listings)
     else:
         logging.warning(f"Request failed! Status: {response.status_code}")
+
+def run_daemon():
+    logging.info(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds")
+    print(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds")
+    print("Press Ctrl+C to stop")
+    
+    while True:
+        try:
+            logging.info("Starting price check cycle...")
+            print("Checking prices...")
+            
+            scraper = EbayScraper()
+            response = scraper.search(PRODUCT_KEYWORDS[0])
+            
+            if response.status_code == 200:
+                logging.info(f"Request successful: Status {response.status_code}")
+                listings = parse_listings(response.content)
+                my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings)
+                print("Price check complete")
+            else:
+                logging.warning(f"Request failed! Status: {response.status_code}")
+                print("Price check failed")
+            
+            logging.info(f"Price check complete. Next check in {CHECK_INTERVAL} seconds")
+            print(f"Next check in {CHECK_INTERVAL} seconds...")
+            time.sleep(CHECK_INTERVAL)
+            
+        except KeyboardInterrupt:
+            logging.info("Daemon stopped by user")
+            print("\nDaemon stopped by user")
+            break
+        except Exception as e:
+            logging.error(f"Error in daemon loop: {e}")
+            print(f"Error: {e}")
+            print("Retrying in 60 seconds...")
+            time.sleep(60)
+
+def main():
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    if SCHEDULER:
+        run_daemon()
+    else:
+        run_once()
         
 
 

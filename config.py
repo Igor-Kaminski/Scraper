@@ -30,9 +30,9 @@ PRODUCT_KEYWORDS = ['retimax 1500']
 MY_BASE_PRICE = 800             
 MY_DELIEVERY_COST = 0          
 
-# Scraping settings
-REQUEST_DELAY = 3          
-CHECK_INTERVAL = 3600
+# Scheduler settings
+SCHEDULER = True  # False = run once and exit, True = run as background daemon
+CHECK_INTERVAL = 3600  # How often to check prices (seconds)
 
 # Notification settings
 NOTIFICATION_TITLE = '🚨 Price Alert!'
