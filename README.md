@@ -13,6 +13,7 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 
 ## **Features**
 
+- **Multi-product support** - Monitor multiple products simultaneously
 - **Smart HTML parsing** - Adapts to eBay's changing structure
 - **Competitor analysis** - Identifies listings cheaper than yours
 - **Desktop alerts** - Instant notifications when competition is found
@@ -52,12 +53,20 @@ source venv/bin/activate  # On Linux/Mac
 pip install -r requirements.txt
 ```
 
-### **4. Configure your settings**
-Edit `config.py` with your product details and preferences:
+### **4. Configure your products**
+Edit `config.py` to add your products to monitor:
 ```python
-PRODUCT_KEYWORDS = ['your product name']
-MY_BASE_PRICE = <your price>
-MY_DELIEVERY_COST = <your delievery cost>
+# Multi-product configuration
+PRODUCTS = [
+    {
+        'name': 'retimax 1500',                    # Display name for notifications and logs
+        'keywords': ['retimax 1500'],              # Search terms for eBay
+        'my_price': 100,                          # Your selling price
+        'delivery_cost': 0,                       # Your delivery cost
+        'enabled': True                           # Enable/disable this product
+    }
+    # Add more products here...
+]
 
 # Scheduler settings
 SCHEDULER = False  # False = run once, True = run as daemon
@@ -90,12 +99,13 @@ python main.py
 ```
 
 ### **What Happens**
-1. **Searches eBay** for your configured products
-2. **Parses all listings** and extracts prices
-3. **Compares to your price** and identifies cheaper competitors
-4. **Shows desktop notification** if competition is found
-5. **Logs everything** to `logs/scraper.log`
-6. **Repeats** every hour (if daemon mode enabled)
+1. **Checks each enabled product** in your PRODUCTS list
+2. **Searches eBay** using the first keyword for each product
+3. **Parses all listings** and extracts prices
+4. **Compares to your price** and identifies cheaper competitors
+5. **Shows product-specific notifications** if competition is found
+6. **Logs everything** to `logs/scraper.log`
+7. **Repeats** every hour (if daemon mode enabled)
 
 ## ⏱️ **Automation**
 
@@ -150,9 +160,12 @@ ebay-price-monitor/
 ## ⚙️ **Configuration**
 
 ### **Product Settings**
-- `PRODUCT_KEYWORDS`: List of search terms for your products
-- `MY_BASE_PRICE`: Your selling price
-- `MY_DELIEVERY_COST`: Your shipping cost
+Each product in the `PRODUCTS` array has these settings:
+- `name`: Display name shown in notifications and logs
+- `keywords`: List of search terms (uses first one for eBay search)
+- `my_price`: Your selling price for this product
+- `delivery_cost`: Your delivery cost (set to 0 for free shipping)
+- `enabled`: `True` to monitor, `False` to skip this product
 
 ### **Scheduler Settings**
 - `SCHEDULER`: Run mode - `False` for one-time, `True` for daemon
