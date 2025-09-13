@@ -18,6 +18,7 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 - **Competitor analysis** - Identifies listings cheaper than yours
 - **Desktop alerts** - Instant notifications when competition is found
 - **Comprehensive logging** - Track all monitoring activity
+- **Cheaper links log** - Full URLs saved to `logs/scraper_links.log`
 - **Configurable settings** - Easy to modify products and prices
 - **Built-in daemon mode** - Run continuously in background
 - **Flexible scheduling** - Choose between one-time or continuous monitoring
@@ -105,7 +106,8 @@ python main.py
 4. **Compares to your price** and identifies cheaper competitors
 5. **Shows product-specific notifications** if competition is found
 6. **Logs everything** to `logs/scraper.log`
-7. **Repeats** every hour (if daemon mode enabled)
+7. **Saves full links of cheaper listings** to `logs/scraper_links.log`
+8. **Repeats** every hour (if daemon mode enabled)
 
 ## ⏱️ **Automation**
 
@@ -175,6 +177,10 @@ Each product in the `PRODUCTS` array has these settings:
 - `NOTIFICATION_TITLE`: Title of the desktop alert
 - `NOTIFICATION_MESSAGE`: Message text (use `{count}` for number of cheaper listings)
 - `NOTIFICATION_TIMEOUT`: How long the notification stays visible (in seconds)
+
+### **Links Logging**
+- Full URLs of cheaper listings are written to `logs/scraper_links.log`
+- Console output stays clean (no full URLs), only titles and prices
 
 
 
