@@ -35,6 +35,18 @@ def parse_listings(html):
                 continue
             price = clean_price(price_el.get_text(strip=True))
             
+            url = None
+            link_el = card.find('a', href=True)
+            if not link_el:
+                link_el = card.select_one('a[href*="/itm/"]')
+            if link_el:
+                href = link_el.get('href')
+                if href and '/itm/' in href:
+                    if href.startswith('/'):
+                        url = f"https://www.ebay.co.uk{href}"
+                    elif href.startswith('http'):
+                        url = href
+            
             delivery_price = 0.0
             if delivery_el:
                 delivery_text = delivery_el.get_text(strip=True).lower()
@@ -46,7 +58,7 @@ def parse_listings(html):
             total_price = price + delivery_price
 
             if title not in seen:
-                listings.append({'title': title, 'price': total_price})
+                listings.append({'title': title, 'price': total_price, 'url': url})
                 seen.add(title)
                 logging.debug(f"Added listing: {title} — £{total_price:.2f}")
 
@@ -60,6 +72,15 @@ def parse_listings(html):
                 continue
             price = clean_price(price_el.get_text(strip=True))
             
+            url = None
+            link_el = item.find('a', href=True)
+            if link_el:
+                href = link_el.get('href')
+                if href.startswith('/'):
+                    url = f"https://www.ebay.co.uk{href}"
+                elif href.startswith('http'):
+                    url = href
+            
             delivery_price = 0.0
             if delivery_el:
                 delivery_text = delivery_el.get_text(strip=True).lower()
@@ -71,7 +92,7 @@ def parse_listings(html):
             total_price = price + delivery_price
 
             if title not in seen:
-                listings.append({'title': title, 'price': total_price})
+                listings.append({'title': title, 'price': total_price, 'url': url})
                 seen.add(title)
                 logging.debug(f"Added listing: {title} — £{total_price:.2f}")
 
@@ -85,9 +106,14 @@ def print_listings(listings):
         print("No listings found.")
         return
     for i, listing in enumerate(listings, 1):
-        print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
+        if listing.get('url'):
+            item_id = listing['url'].split('/itm/')[-1].split('?')[0] if '/itm/' in listing['url'] else "Link"
+            url_text = f" | 🔗 {item_id}"
+        else:
+            url_text = ""
+        print(f"{i}. {listing['title']} — £{listing['price']:.2f}{url_text}")
 
-def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings, product_name):
+def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings, product_name, links_log_path=None):
     if not listings:
         print(f"No listings found for {product_name}")
         logging.error(f"No listings found for {product_name} | comparison between your cheapest product unsuccessful")
@@ -103,6 +129,19 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings, product_name
     if len(cheaper_listings) > 0:
         logging.info(f"{len(cheaper_listings)} cheaper listings found for {product_name}")
         print(f"Cheaper listings have been found for {product_name}:\n")
+        
+        if links_log_path:
+            try:
+                with open(links_log_path, 'a', encoding='utf-8') as f:
+                    f.write(f"\n=== {product_name} - {len(cheaper_listings)} cheaper listings found ===\n")
+                    for i, listing in enumerate(cheaper_listings, 1):
+                        if listing.get('url'):
+                            f.write(f"{i}. {listing['title']} — £{listing['price']:.2f} | {listing['url']}\n")
+                        else:
+                            f.write(f"{i}. {listing['title']} — £{listing['price']:.2f} | No URL\n")
+                    f.write("=" * 60 + "\n")
+            except Exception as e:
+                logging.error(f"Failed to write links log: {e}")
         
         notification.notify(
             title=f"{NOTIFICATION_TITLE} - {product_name}",

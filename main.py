@@ -24,6 +24,8 @@ logging.basicConfig(
 
 logging.info("Logging started")
 
+LINKS_LOG_FILE = os.path.join(LOG_DIR, 'scraper_links.log')
+
 def signal_handler(sig, frame):
     logging.info("Received shutdown signal (Ctrl+C)")
     print("\nShutting down gracefully...")
@@ -49,7 +51,7 @@ def run_once():
         if response.status_code == 200:
             logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
             listings = parse_listings(response.content)
-            my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'])
+            my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'], LINKS_LOG_FILE)
             #print_listings(listings)
         else:
             logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
@@ -83,7 +85,7 @@ def run_daemon():
                 if response.status_code == 200:
                     logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
                     listings = parse_listings(response.content)
-                    my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'])
+                    my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'], LINKS_LOG_FILE)
                 else:
                     logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
                     print(f"Failed to check {product['name']}")
