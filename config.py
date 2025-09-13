@@ -2,9 +2,32 @@
 CONFIG SETTINGS
 '''
 
-PRODUCT_KEYWORDS = ['your_item_name']  # Product to monitor - only one product can be monitored at a time
-MY_BASE_PRICE = 100            
-MY_DELIEVERY_COST = 0  # Set to 0 if you offer free shipping, otherwise add your shipping cost
+# Multiple product support
+PRODUCTS = [
+    {
+        'name': 'rtx 3070', # Will appear in the logs file and notifications
+        'keywords': ['rtx 3070'], # Actual search term used in eBay search
+        'my_price': 200,
+        'delivery_cost': 0,
+        'enabled': True # Whether to search for this product, set to False to skip
+    },
+    # Example of how to add more products:
+    # {
+    #     'name': 'iPhone 15',
+    #     'keywords': ['iPhone 15', 'iPhone 15 Pro'],
+    #     'my_price': 800,
+    #     'delivery_cost': 10,
+    #     'enabled': True
+    # },
+    # {
+    #     'name': 'Gaming Laptop',
+    #     'keywords': ['gaming laptop', 'gaming notebook'],
+    #     'my_price': 1200,
+    #     'delivery_cost': 0,
+    #     'enabled': False  # This product is disabled
+    # }
+]
+
 
 # Scheduler settings
 SCHEDULER = False  # False = run once and exit, True = run as background daemon

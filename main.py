@@ -1,6 +1,6 @@
 # EBay scraper
 
-from config import PRODUCT_KEYWORDS, MY_BASE_PRICE, MY_DELIEVERY_COST, SCHEDULER, CHECK_INTERVAL
+from config import PRODUCTS, SCHEDULER, CHECK_INTERVAL
 from scraper import EbayScraper
 from analyser import my_listing_standing, parse_listings, print_listings
 import logging
@@ -32,15 +32,28 @@ def signal_handler(sig, frame):
 def run_once():
     scraper = EbayScraper()
     logging.info("Scraper Created")
-    response = scraper.search(PRODUCT_KEYWORDS[0])
     
-    if response.status_code == 200:
-        logging.info(f"Request successful: Status {response.status_code}")
-        listings = parse_listings(response.content)
-        my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings)
-        #print_listings(listings)
-    else:
-        logging.warning(f"Request failed! Status: {response.status_code}")
+    # Multi-product mode
+    for product in PRODUCTS:
+        if not product.get('enabled', True):
+            logging.info(f"Skipping disabled product: {product['name']}")
+            continue
+            
+        logging.info(f"Checking product: {product['name']}")
+        print(f"Checking product: {product['name']}")
+        
+        # Use first keyword for search
+        keywords = product['keywords'][0] if product['keywords'] else product['name']
+        response = scraper.search(keywords)
+        
+        if response.status_code == 200:
+            logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
+            listings = parse_listings(response.content)
+            my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'])
+            #print_listings(listings)
+        else:
+            logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
+            print(f"Failed to check {product['name']}")
 
 def run_daemon():
     logging.info(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds")
@@ -53,16 +66,27 @@ def run_daemon():
             print("Checking prices...")
             
             scraper = EbayScraper()
-            response = scraper.search(PRODUCT_KEYWORDS[0])
             
-            if response.status_code == 200:
-                logging.info(f"Request successful: Status {response.status_code}")
-                listings = parse_listings(response.content)
-                my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings)
-                print("Price check complete")
-            else:
-                logging.warning(f"Request failed! Status: {response.status_code}")
-                print("Price check failed")
+            # Multi-product mode
+            for product in PRODUCTS:
+                if not product.get('enabled', True):
+                    logging.info(f"Skipping disabled product: {product['name']}")
+                    continue
+                    
+                logging.info(f"Checking product: {product['name']}")
+                print(f"Checking product: {product['name']}")
+                
+                # Use first keyword for search
+                keywords = product['keywords'][0] if product['keywords'] else product['name']
+                response = scraper.search(keywords)
+                
+                if response.status_code == 200:
+                    logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
+                    listings = parse_listings(response.content)
+                    my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'])
+                else:
+                    logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
+                    print(f"Failed to check {product['name']}")
             
             logging.info(f"Price check complete. Next check in {CHECK_INTERVAL} seconds")
             print(f"Next check in {CHECK_INTERVAL} seconds...")

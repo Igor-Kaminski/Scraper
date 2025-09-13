@@ -87,10 +87,10 @@ def print_listings(listings):
     for i, listing in enumerate(listings, 1):
         print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
 
-def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
+def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings, product_name):
     if not listings:
-        print("No listings found")
-        logging.error("No listings found | comparison between your cheapest product unsucessful")
+        print(f"No listings found for {product_name}")
+        logging.error(f"No listings found for {product_name} | comparison between your cheapest product unsuccessful")
         return
 
     cheaper_listings = []
@@ -99,18 +99,20 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIEVERY_COST, listings):
     for x in listings:
         if x["price"] < real_price:
             cheaper_listings.append(x)
-
+    
     if len(cheaper_listings) > 0:
-        logging.info(f"{len(cheaper_listings)} cheaper listings found")
-        print("Cheaper listings have been found:\n")
+        logging.info(f"{len(cheaper_listings)} cheaper listings found for {product_name}")
+        print(f"Cheaper listings have been found for {product_name}:\n")
+        
         notification.notify(
-            title=NOTIFICATION_TITLE,
+            title=f"{NOTIFICATION_TITLE} - {product_name}",
             message=NOTIFICATION_MESSAGE.format(count=len(cheaper_listings)),
             timeout=NOTIFICATION_TIMEOUT
         )
+            
         for i, listing in enumerate(cheaper_listings, 1):
-            logging.info(f"Cheaper listing {i}: {listing['title']} — £{listing['price']:.2f}")
+            logging.info(f"Cheaper listing {i} for {product_name}: {listing['title']} — £{listing['price']:.2f}")
             print(f"{i}. {listing['title']} — £{listing['price']:.2f}")
     else:
-        logging.info("No cheaper listings found")
-        print("None were lower lets go!")
+        logging.info(f"No cheaper listings found for {product_name}")
+        print(f"None were lower lets go! ({product_name})")
