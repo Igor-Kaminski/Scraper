@@ -9,10 +9,11 @@ import time
 import signal
 import sys
 
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 
-LOG_DIR = os.path.join(SCRIPT_DIR, 'logs')
-
+LOG_DIR = os.path.join(REPO_ROOT, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
 logging.basicConfig(
