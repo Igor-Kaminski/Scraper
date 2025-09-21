@@ -5,9 +5,9 @@ CONFIG SETTINGS
 # Multiple product support
 PRODUCTS = [
     {
-        'name': 'rtx 3070', # Will appear in the logs file and notifications
-        'keywords': ['rtx 3070'], # Actual search term used in eBay search
-        'my_price': 200,
+        'name': 'retimax 1500', # Will appear in the logs file and notifications
+        'keywords': ['retimax 1500'], # Actual search term used in eBay search
+        'my_price': 6.95,
         'delivery_cost': 0,
         'enabled': True # Whether to search for this product, set to False to skip
     },
@@ -53,3 +53,14 @@ HEADERS = {
     "Sec-Fetch-Site": "none",
     "Sec-Fetch-User": "?1"
 }
+
+# Discord Settings | Optional if using discord bot integration
+RUN_CHANNEL_ID = 1237588480985534484 # Channel in which to run the bot
+LOG_CHANNEL_ID = 1418641605149196409
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN') # Create a .env file and put DISCORD_BOT_TOKEN = <your_token> there
+

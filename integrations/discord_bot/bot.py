@@ -1,19 +1,10 @@
-from monitor import EbayScraper, parse_listings, PRODUCTS
-from dotenv import load_dotenv
+'''
+Discord bot with scraper logic
+'''
+
+
+from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN
 import discord
-import os
-
-
-
-# ----------------------------------------------------------------------------
-# CONFIGURATION
-# ----------------------------------------------------------------------------
-load_dotenv()
-
-
-RUN_CHANNEL_ID = 1237588480985534484
-LOG_CHANNEL_ID = 1418641605149196409
-DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
 
 def start_scraper_once():
@@ -80,14 +71,13 @@ client = discord.Client(intents=intents)
 async def on_ready():
     print(f'We have logged in as {client.user}')
 
-    run_channel = client.get_channel(RUN_CHANNEL_ID)
-    log_channel = client.get_channel(LOG_CHANNEL_ID)
-
-
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
+        return
+
+    if message.channel.id != RUN_CHANNEL_ID:
         return
 
     if message.content.lower().startswith('!check'):
@@ -102,7 +92,7 @@ async def on_message(message):
                 chunk = result_block[i:i+1900]
                 await message.channel.send(f"\n{chunk}\n")
 
-        await message.channel.send('Price check complete!')
+        await message.channel.send('\nPrice check complete!')
 
     if message.content.lower().startswith('!daemon'):
         start_daemon()        
