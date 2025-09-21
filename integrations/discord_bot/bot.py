@@ -169,13 +169,13 @@ async def on_message(message):
         await message.channel.send("Daemon started in the background!")
     
     if message.content.lower().startswith('!help'):
-        help_text = (
-        "**Ebay Monitor Bot Commands**\n\n"
-        "`!check`  – Run a one-time price check on all enabled products.\n"
-        "`!daemon` – Start continuous monitoring (checks every "
-        f"{CHECK_INTERVAL} seconds) in this channel.\n"
-        "`!help`   – Show this help message.\n" 
-        )   
+        help_text = f"""**Ebay Monitor Bot Commands**
+
+        `!check`  – Run a one-time price check on all enabled products.
+        `!check -p <product> -price <your_price> -del <delivery_cost>` – Run a one-time price check with custom flags.
+        `!daemon` – Start continuous monitoring (checks every {CHECK_INTERVAL} seconds) in this channel.
+        `!help`   – Show this help message.
+        """
         await message.channel.send(help_text)
    
          
