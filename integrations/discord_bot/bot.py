@@ -109,6 +109,17 @@ async def on_message(message):
     if message.content.lower().startswith('!daemon'):
         asyncio.create_task(start_daemon(message.channel))
         await message.channel.send("Daemon started in the background!")
+    
+    if message.content.lower().startswith('!help'):
+        help_text = (
+        "**Ebay Monitor Bot Commands**\n\n"
+        "`!check`  – Run a one-time price check on all enabled products.\n"
+        "`!daemon` – Start continuous monitoring (checks every "
+        f"{CHECK_INTERVAL} seconds) in this channel.\n"
+        "`!help`   – Show this help message.\n" 
+        )   
+        await message.channel.send(help_text)
+   
          
 
 
