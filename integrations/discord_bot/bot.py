@@ -3,11 +3,12 @@ Discord bot with scraper logic
 '''
 
 
-from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN
+from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN, CHECK_INTERVAL
 import discord
+import asyncio
 
 
-def start_scraper_once():
+async def start_scraper_once():
     scraper = EbayScraper()
     messages = []
 
@@ -18,15 +19,11 @@ def start_scraper_once():
         messages.append(f"Checking product: {product['name']}")
         
         keywords = product['keywords'][0] if product['keywords'] else product['name']
-        response = scraper.search(keywords)
+        html, status = await scraper.search(keywords)
         
-        if response.status_code == 200:
-            listings = parse_listings(response.content)
-            result_msgs = my_listing_standing(
-                product['my_price'],
-                product['delivery_cost'],
-                listings,
-                product['name']
+        if status == 200:
+            listings = parse_listings(html)
+            result_msgs = my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name']
             )
             messages.extend(result_msgs)
         else:
@@ -58,8 +55,23 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIVERY_COST, listings, product_name)
     
     return messages
 
-def start_daemon():
-    pass  
+async def start_daemon(channel):
+    await channel.send(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds. Press Ctrl+C to stop.")
+    
+    while True:
+        try:
+            messages = await start_scraper_once()
+            result_block = "\n".join(messages)
+
+            for i in range(0, len(result_block), 1900):
+                chunk = result_block[i:i+1900]
+                await channel.send(f"\n{chunk}\n")
+
+            await asyncio.sleep(CHECK_INTERVAL)
+        except Exception as e:
+            await channel.send(f"Error in daemon: {e}. Retrying in 60 seconds...")
+            await asyncio.sleep(60)
+  
 
 
 intents = discord.Intents.default()
@@ -82,7 +94,7 @@ async def on_message(message):
 
     if message.content.lower().startswith('!check'):
         await message.channel.send('Running price check...')
-        messages = start_scraper_once()
+        messages = await start_scraper_once()
         result_block = "\n".join(messages)
 
         if len(result_block) <= 1900:
@@ -95,7 +107,9 @@ async def on_message(message):
         await message.channel.send('\nPrice check complete!')
 
     if message.content.lower().startswith('!daemon'):
-        start_daemon()        
+        asyncio.create_task(start_daemon(message.channel))
+        await message.channel.send("Daemon started in the background!")
+         
 
 
 def main():
