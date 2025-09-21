@@ -18,10 +18,12 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 - **Competitor analysis** - Identifies listings cheaper than yours
 - **Desktop alerts** - Instant notifications when competition is found
 - **Comprehensive logging** - Track all monitoring activity
-- **Cheaper links log** - Full URLs saved to `logs/scraper_links.log`
+- **Links log** - Full URLs saved to `logs/scraper_links.log`
 - **Configurable settings** - Easy to modify products and prices
 - **Built-in daemon mode** - Run continuously in background
 - **Flexible scheduling** - Choose between one-time or continuous monitoring
+- **Discord bot integration (optional)** - Run checks from Discord and post results in a channel
+
 
 ## **Requirements**
 
@@ -38,8 +40,8 @@ A Python-based price monitoring tool that automatically tracks eBay listings for
 
 ### **1. Clone the repository**
 ```bash
-git clone https://github.com/Igor-Kaminski/Scraper/tree/main
-cd ebay-price-monitor
+git clone https://github.com/Igor-Kaminski/Scraper.git
+cd Scraper
 ```
 
 ### **2. Create virtual environment**
@@ -55,7 +57,7 @@ pip install -r requirements.txt
 ```
 
 ### **4. Configure your products**
-Edit `config.py` to add your products to monitor:
+Edit `monitor/config.py` to add your products to monitor:
 ```python
 # Multi-product configuration
 PRODUCTS = [
@@ -81,23 +83,31 @@ NOTIFICATION_TIMEOUT = 10
 
 ## 🎮 **Usage**
 
-### **Run Once (Default)**
+### **Run Once (Default, async under the hood)**
 ```bash
-python main.py
+python run_scraper.py
 ```
 - Checks prices once and exits
 - Perfect for cron jobs or manual runs
 
-### **Run as Daemon**
-1. Set `SCHEDULER = True` in `config.py`
-2. Run `python main.py`
+### **Run as Daemon (async)**
+1. Set `SCHEDULER = True` in `monitor/config.py`
+2. Run `python run_scraper.py`
 3. Press `Ctrl+C` to stop gracefully
 
 ```bash
-python main.py
-# Output: Starting daemon mode - checking every 3600 seconds
+python run_scraper.py
+# Output: Starting async daemon - checking every 3600 seconds
 # Press Ctrl+C to stop
 ```
+
+### **Discord Bot (Optional)**
+- You can control the scraper and receive results directly in Discord.
+- Quick start: set `DISCORD_BOT_TOKEN` in `.env`, set `RUN_CHANNEL_ID` in `monitor/config.py`, then run:
+```bash
+python run_bot.py
+```
+- For full setup and detailed instructions, see the Discord guide: [Discord Bot Setup Guide](integrations/discord_bot/README.md)
 
 ### **What Happens**
 1. **Checks each enabled product** in your PRODUCTS list
@@ -107,15 +117,15 @@ python main.py
 5. **Shows product-specific notifications** if competition is found
 6. **Logs everything** to `logs/scraper.log`
 7. **Saves full links of cheaper listings** to `logs/scraper_links.log`
-8. **Repeats** every hour (if daemon mode enabled)
+8. **Repeats asynchronously** every hour (if daemon mode enabled)
 
 ## ⏱️ **Automation**
 
 ### **Option 1: Built-in Daemon (Recommended)**
 Enable the built-in daemon mode for continuous monitoring:
 
-1. Set `SCHEDULER = True` in `config.py`
-2. Run `python main.py`
+1. Set `SCHEDULER = True` in `monitor/config.py`
+2. Run `python run_scraper.py`
 3. The daemon runs continuously until stopped with `Ctrl+C`
 
 **Benefits:**
@@ -130,13 +140,13 @@ Enable the built-in daemon mode for continuous monitoring:
 ```bash
 crontab -e
 # Add the following line to run every hour
-0 * * * * /full/path/to/.venv/bin/python /full/path/to/main.py >> /full/path/to/logs/cron.log 2>&1
+0 * * * * /full/path/to/.venv/bin/python /full/path/to/run_scraper.py >> /full/path/to/logs/cron.log 2>&1
 ```
 
 #### **Windows (Task Scheduler)**
 1. Open **Task Scheduler** → **Create Task**
 2. Set **Trigger** → **Daily** → **Repeat task every 1 hour**
-3. Set **Action** → **Start a program** → **Program**: `python.exe`, **Arguments**: `main.py`
+3. Set **Action** → **Start a program** → **Program**: `python.exe`, **Arguments**: `run_scraper.py`
 
 **Notes:**
 - Use external schedulers only if you prefer `SCHEDULER = False`
@@ -149,14 +159,22 @@ crontab -e
 ## 📁 **Project Structure**
 
 ```
-ebay-price-monitor/
-├── main.py              # Main entry point
-├── config.py            # Configuration settings
-├── scraper.py           # eBay scraping logic
-├── analyser.py          # Price analysis and notifications
-├── requirements.txt     # Python dependencies
-├── logs/                # Activity logs
-└── README.md            # README
+Scraper/
+├── run_scraper.py         # Entry point for CLI (async run/daemon)
+├── run_bot.py             # Entry point for Discord bot (async)
+├── bash_scraper.sh        # Bash helper (optional)
+├── requirements.txt       # Python dependencies
+├── logs/                  # Activity logs and cheaper links
+├── monitor/
+│   ├── main.py            # Orchestration (async run_once/run_daemon
+│   ├── config.py          # Configuration settings
+│   ├── scraper.py         # Async eBay scraping logic (aiohttp)
+│   └── analyser.py        # HTML parsing and price analysis
+├── integrations/
+│   └── discord_bot/
+│       ├── bot.py         # Discord bot commands (!check, !daemon)
+│       └── README.md      # Setup & configuration guide
+└── README.md              # This file
 ```
 
 ## ⚙️ **Configuration**
@@ -177,6 +195,12 @@ Each product in the `PRODUCTS` array has these settings:
 - `NOTIFICATION_TITLE`: Title of the desktop alert
 - `NOTIFICATION_MESSAGE`: Message text (use `{count}` for number of cheaper listings)
 - `NOTIFICATION_TIMEOUT`: How long the notification stays visible (in seconds)
+
+### **Discord (Optional)**
+- Set `DISCORD_BOT_TOKEN` in `.env`
+- Set `RUN_CHANNEL_ID` (and optionally `LOG_CHANNEL_ID`) in `monitor/config.py`
+- Run the bot with `python run_bot.py`
+- Full instructions: [Discord Bot Setup Guide](integrations/discord_bot/README.md)
 
 ### **Links Logging**
 - Full URLs of cheaper listings are written to `logs/scraper_links.log`
