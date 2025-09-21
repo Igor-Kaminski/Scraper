@@ -92,25 +92,23 @@ async def start_daemon(channel):
             await channel.send(f"Error in daemon: {e}. Retrying in 60 seconds...")
             await asyncio.sleep(60)
   
-
 def get_arguments(message):
-    parts = message.split()
-
-    if len(parts) < 2:
-        return 0
-    
     arguments = {
         'product_name': None,
         'price': None,
         'delivery_price': None
     }
-    
-    i = 0
+
+    parts = message.split()
+    i = 1  
     while i < len(parts):
         if parts[i] in ['-p', 'product']:
-            if i + 1 < len(parts):
-                arguments['product_name'] = parts[i+1]
-            i += 2
+            i += 1
+            name_parts = []
+            while i < len(parts) and not parts[i].startswith('-'):
+                name_parts.append(parts[i])
+                i += 1
+            arguments['product_name'] = " ".join(name_parts)
         elif parts[i] in ['-price', 'price']:
             if i + 1 < len(parts):
                 arguments['price'] = float(parts[i+1])
@@ -123,7 +121,6 @@ def get_arguments(message):
             i += 1
 
     return arguments
-
     
     
 
