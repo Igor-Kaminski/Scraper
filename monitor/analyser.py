@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from plyer import notification
 import logging
 import re
-from config import NOTIFICATION_TITLE, NOTIFICATION_MESSAGE, NOTIFICATION_TIMEOUT
+from .config import NOTIFICATION_TITLE, NOTIFICATION_MESSAGE, NOTIFICATION_TIMEOUT
 
 
 def clean_price(price_text):

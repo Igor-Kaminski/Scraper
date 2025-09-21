@@ -2,7 +2,7 @@
 Ebay Scraper Request Logic
 '''
 import requests
-from config import HEADERS
+from .config import HEADERS
 
 class EbayScraper():
     def __init__(self):
