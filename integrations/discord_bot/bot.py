@@ -2,7 +2,6 @@
 Discord bot with scraper logic
 '''
 
-
 from ast import arguments
 from itertools import product
 from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN, CHECK_INTERVAL
@@ -49,8 +48,6 @@ async def start_scraper_once(arguments=None):
 
     return messages
 
-    
-
 def my_listing_standing(MY_BASE_PRICE, MY_DELIVERY_COST, listings, product_name):
     if not listings:
         return [f"No listings found for {product_name}"]
@@ -75,23 +72,27 @@ def my_listing_standing(MY_BASE_PRICE, MY_DELIVERY_COST, listings, product_name)
     
     return messages
 
-async def start_daemon(channel):
-    await channel.send(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds. Press Ctrl+C to stop.")
-    
+async def start_daemon(channel, arguments=None):
+    interval = CHECK_INTERVAL
+    if arguments and arguments.get('interval'):
+        interval = float(arguments['interval'])
+
+    await channel.send(f"Starting daemon mode - checking every {interval} seconds. Press Ctrl+C to stop.")
+
     while True:
         try:
-            messages = await start_scraper_once()
+            messages = await start_scraper_once(arguments)
             result_block = "\n".join(messages)
 
             for i in range(0, len(result_block), 1900):
                 chunk = result_block[i:i+1900]
                 await channel.send(f"\n{chunk}\n")
 
-            await asyncio.sleep(CHECK_INTERVAL)
+            await asyncio.sleep(interval)
         except Exception as e:
             await channel.send(f"Error in daemon: {e}. Retrying in 60 seconds...")
             await asyncio.sleep(60)
-  
+
 def get_arguments(message):
     arguments = {
         'product_name': None,
@@ -117,13 +118,17 @@ def get_arguments(message):
             if i + 1 < len(parts):
                 arguments['delivery_price'] = float(parts[i+1])
             i += 2
+        elif parts[i] in ['-i', '-interval']:
+            if i + 1 < len(parts):
+                arguments['interval'] = float(parts[i+1])
+            i += 2    
         else:
             i += 1
 
     return arguments
-    
-    
 
+    
+        
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -132,7 +137,6 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
-
 
 @client.event
 async def on_message(message):
@@ -163,10 +167,11 @@ async def on_message(message):
 
         await message.channel.send('\nPrice check complete!')
         
-
     if message.content.lower().startswith('!daemon'):
-        asyncio.create_task(start_daemon(message.channel))
+        args = get_arguments(message.content) 
+        asyncio.create_task(start_daemon(message.channel, arguments=args))
         await message.channel.send("Daemon started in the background!")
+    
     
     if message.content.lower().startswith('!help'):
         help_text = f"""**Ebay Monitor Bot Commands**
