@@ -9,29 +9,47 @@ from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_C
 import discord
 import asyncio
 
-
-async def start_scraper_once():
+async def start_scraper_once(arguments=None):
     scraper = EbayScraper()
     messages = []
 
-    for product in PRODUCTS:
-        if not product.get('enabled', True):
-            continue
+    if arguments is None:
+        products_to_check = [p for p in PRODUCTS if p.get('enabled', True)]
+    else:
+        product_name = arguments.get('product_name', 'Unnamed Product')
+        keywords = [arguments.get('product_name')] if arguments.get('product_name') else [product_name]
+        my_price = arguments.get('price', 0.0)
+        delivery_cost = arguments.get('delivery_price', 0.0)
 
+        products_to_check = [{
+            'name': product_name,
+            'keywords': keywords,
+            'my_price': my_price,
+            'delivery_cost': delivery_cost,
+            'enabled': True
+        }]
+
+    for product in products_to_check:
         messages.append(f"Checking product: {product['name']}")
         
-        keywords = product['keywords'][0] if product['keywords'] else product['name']
-        html, status = await scraper.search(keywords)
+        search_keywords = product['keywords'][0] if product['keywords'] else product['name']
+        html, status = await scraper.search(search_keywords)
         
         if status == 200:
             listings = parse_listings(html)
-            result_msgs = my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name']
+            result_msgs = my_listing_standing(
+                product['my_price'], 
+                product['delivery_cost'], 
+                listings, 
+                product['name']
             )
             messages.extend(result_msgs)
         else:
-            messages.append(f"Failed to check {product['name']} (status {response.status_code})")
-    
+            messages.append(f"Failed to check {product['name']} (status {status})")
+
     return messages
+
+    
 
 def my_listing_standing(MY_BASE_PRICE, MY_DELIVERY_COST, listings, product_name):
     if not listings:
@@ -129,24 +147,25 @@ async def on_message(message):
 
     if message.content.lower().startswith('!check'):
         actual_message = message.content
-
+        await message.channel.send('Running price check...')
         arguments = get_arguments(actual_message)
 
         if arguments == 0:
-            await message.channel.send('Running price check...')
             messages = await start_scraper_once()
-            result_block = "\n".join(messages)
+        else: 
+            messages = await start_scraper_once(arguments)
+        
+        result_block = "\n".join(messages)
 
-            if len(result_block) <= 1900:
-                await message.channel.send(f"\n{result_block}\n")
-            else:
-                for i in range(0, len(result_block), 1900):
-                    chunk = result_block[i:i+1900]
-                    await message.channel.send(f"\n{chunk}\n")
-
-            await message.channel.send('\nPrice check complete!')
+        if len(result_block) <= 1900:
+            await message.channel.send(f"\n{result_block}\n")
         else:
-            pass
+            for i in range(0, len(result_block), 1900):
+                chunk = result_block[i:i+1900]
+                await message.channel.send(f"\n{chunk}\n")
+
+        await message.channel.send('\nPrice check complete!')
+        
 
     if message.content.lower().startswith('!daemon'):
         asyncio.create_task(start_daemon(message.channel))
