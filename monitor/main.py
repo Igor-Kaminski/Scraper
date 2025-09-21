@@ -1,13 +1,14 @@
 # EBay scraper
 
-from config import PRODUCTS, SCHEDULER, CHECK_INTERVAL
-from scraper import EbayScraper
-from analyser import my_listing_standing, parse_listings, print_listings
+from monitor.config import PRODUCTS, SCHEDULER, CHECK_INTERVAL
+from monitor.scraper import EbayScraper
+from monitor.analyser import my_listing_standing, parse_listings, print_listings
 import logging
 import os
 import time
 import signal
 import sys
+import asyncio
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,12 +28,7 @@ logging.info("Logging started")
 
 LINKS_LOG_FILE = os.path.join(LOG_DIR, 'scraper_links.log')
 
-def signal_handler(sig, frame):
-    logging.info("Received shutdown signal (Ctrl+C)")
-    print("\nShutting down gracefully...")
-    sys.exit(0)
-
-def run_once():
+async def run_once():
     scraper = EbayScraper()
     logging.info("Scraper Created")
     
@@ -47,73 +43,47 @@ def run_once():
         
         # Use first keyword for search
         keywords = product['keywords'][0] if product['keywords'] else product['name']
-        response = scraper.search(keywords)
+        html, status = await scraper.search(keywords)
         
-        if response.status_code == 200:
-            logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
-            listings = parse_listings(response.content)
+        if status == 200:
+            logging.info(f"Request successful for {product['name']}: Status {status}")
+            listings = parse_listings(html)
             my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'], LINKS_LOG_FILE)
             #print_listings(listings)
         else:
-            logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
+            logging.warning(f"Request failed for {product['name']}! Status: {status}")
             print(f"Failed to check {product['name']}")
 
-def run_daemon():
-    logging.info(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds")
-    print(f"Starting daemon mode - checking every {CHECK_INTERVAL} seconds")
-    print("Press Ctrl+C to stop")
+async def run_daemon():
+    logging.info(f"Starting async daemon - checking every {CHECK_INTERVAL} seconds")
+    print(f"Starting async daemon - checking every {CHECK_INTERVAL} seconds")
     
     while True:
         try:
-            logging.info("Starting price check cycle...")
-            print("Checking prices...")
-            
-            scraper = EbayScraper()
-            
-            # Multi-product mode
-            for product in PRODUCTS:
-                if not product.get('enabled', True):
-                    logging.info(f"Skipping disabled product: {product['name']}")
-                    continue
-                    
-                logging.info(f"Checking product: {product['name']}")
-                print(f"Checking product: {product['name']}")
-                
-                # Use first keyword for search
-                keywords = product['keywords'][0] if product['keywords'] else product['name']
-                response = scraper.search(keywords)
-                
-                if response.status_code == 200:
-                    logging.info(f"Request successful for {product['name']}: Status {response.status_code}")
-                    listings = parse_listings(response.content)
-                    my_listing_standing(product['my_price'], product['delivery_cost'], listings, product['name'], LINKS_LOG_FILE)
-                else:
-                    logging.warning(f"Request failed for {product['name']}! Status: {response.status_code}")
-                    print(f"Failed to check {product['name']}")
-            
-            logging.info(f"Price check complete. Next check in {CHECK_INTERVAL} seconds")
-            print(f"Next check in {CHECK_INTERVAL} seconds...")
-            time.sleep(CHECK_INTERVAL)
-            
+            await run_once()
+            logging.info(f"Cycle complete. Sleeping for {CHECK_INTERVAL} seconds...")
+            await asyncio.sleep(CHECK_INTERVAL)
         except KeyboardInterrupt:
             logging.info("Daemon stopped by user")
-            print("\nDaemon stopped by user")
+            print("Daemon stopped by user")
             break
         except Exception as e:
             logging.error(f"Error in daemon loop: {e}")
-            print(f"Error: {e}")
-            print("Retrying in 60 seconds...")
-            time.sleep(60)
+            print(f"Error: {e} - retrying in 60 seconds")
+            await asyncio.sleep(60)
+
+def signal_handler(sig, frame):
+    logging.info("Received shutdown signal (Ctrl+C)")
+    print("\nShutting down gracefully...")
+    sys.exit(0)
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     
     if SCHEDULER:
-        run_daemon()
+        asyncio.run(run_daemon())
     else:
-        run_once()
-        
-
+        asyncio.run(run_once())
 
 if __name__ == "__main__":
     main()
