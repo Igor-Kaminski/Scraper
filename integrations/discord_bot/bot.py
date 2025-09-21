@@ -3,6 +3,8 @@ Discord bot with scraper logic
 '''
 
 
+from ast import arguments
+from itertools import product
 from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN, CHECK_INTERVAL
 import discord
 import asyncio
@@ -73,6 +75,39 @@ async def start_daemon(channel):
             await asyncio.sleep(60)
   
 
+def get_arguments(message):
+    parts = message.split()
+
+    if len(parts) < 2:
+        return 0
+    
+    arguments = {
+        'product_name': None,
+        'price': None,
+        'delivery_price': None
+    }
+    
+    i = 0
+    while i < len(parts):
+        if parts[i] in ['-p', 'product']:
+            if i + 1 < len(parts):
+                arguments['product_name'] = parts[i+1]
+            i += 2
+        elif parts[i] in ['-price', 'price']:
+            if i + 1 < len(parts):
+                arguments['price'] = float(parts[i+1])
+            i += 2
+        elif parts[i] in ['-del', 'del', 'delivery']:
+            if i + 1 < len(parts):
+                arguments['delivery_price'] = float(parts[i+1])
+            i += 2
+        else:
+            i += 1
+
+    return arguments
+
+    
+    
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -93,18 +128,25 @@ async def on_message(message):
         return
 
     if message.content.lower().startswith('!check'):
-        await message.channel.send('Running price check...')
-        messages = await start_scraper_once()
-        result_block = "\n".join(messages)
+        actual_message = message.content
 
-        if len(result_block) <= 1900:
-            await message.channel.send(f"\n{result_block}\n")
+        arguments = get_arguments(actual_message)
+
+        if arguments == 0:
+            await message.channel.send('Running price check...')
+            messages = await start_scraper_once()
+            result_block = "\n".join(messages)
+
+            if len(result_block) <= 1900:
+                await message.channel.send(f"\n{result_block}\n")
+            else:
+                for i in range(0, len(result_block), 1900):
+                    chunk = result_block[i:i+1900]
+                    await message.channel.send(f"\n{chunk}\n")
+
+            await message.channel.send('\nPrice check complete!')
         else:
-            for i in range(0, len(result_block), 1900):
-                chunk = result_block[i:i+1900]
-                await message.channel.send(f"\n{chunk}\n")
-
-        await message.channel.send('\nPrice check complete!')
+            pass
 
     if message.content.lower().startswith('!daemon'):
         asyncio.create_task(start_daemon(message.channel))
