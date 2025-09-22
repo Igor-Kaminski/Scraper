@@ -92,42 +92,6 @@ async def start_daemon(channel, arguments=None):
             await channel.send(f"Error in daemon: {e}. Retrying in 60 seconds...")
             await asyncio.sleep(60)
 
-def get_arguments(message):
-    arguments = {
-        'product_name': None,
-        'price': None,
-        'delivery_price': None
-    }
-
-    parts = message.split()
-    i = 1  
-    while i < len(parts):
-        if parts[i] in ['-p', 'product']:
-            i += 1
-            name_parts = []
-            while i < len(parts) and not parts[i].startswith('-'):
-                name_parts.append(parts[i])
-                i += 1
-            arguments['product_name'] = " ".join(name_parts)
-        elif parts[i] in ['-price', 'price']:
-            if i + 1 < len(parts):
-                arguments['price'] = float(parts[i+1])
-            i += 2
-        elif parts[i] in ['-del', 'del', 'delivery']:
-            if i + 1 < len(parts):
-                arguments['delivery_price'] = float(parts[i+1])
-            i += 2
-        elif parts[i] in ['-i', '-interval']:
-            if i + 1 < len(parts):
-                arguments['interval'] = float(parts[i+1])
-            i += 2    
-        else:
-            i += 1
-
-    return arguments
-
-
-
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -136,6 +100,7 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
+   
 
 @client.event
 async def on_message(message):
@@ -145,44 +110,78 @@ async def on_message(message):
     if message.channel.id != RUN_CHANNEL_ID:
         return
 
-    if message.content.lower().startswith('!check'):
-        actual_message = message.content
-        await message.channel.send('Running price check...')
-        arguments = get_arguments(actual_message)
+    def get_arguments(content):
+        arguments = {
+            'product_name': None,
+            'price': None,
+            'delivery_price': None,
+            'interval': None
+        }
+        parts = content.split()
+        i = 1  
+        while i < len(parts):
+            if parts[i] in ['-p', 'product']:
+                i += 1
+                name_parts = []
+                while i < len(parts) and not parts[i].startswith('-'):
+                    name_parts.append(parts[i])
+                    i += 1
+                arguments['product_name'] = " ".join(name_parts)
+            elif parts[i] in ['-price', 'price']:
+                if i + 1 < len(parts):
+                    arguments['price'] = float(parts[i+1])
+                i += 2
+            elif parts[i] in ['-del', 'delivery', 'delievery']:
+                if i + 1 < len(parts):
+                    arguments['delivery_price'] = float(parts[i+1])
+                i += 2
+            elif parts[i] in ['-i', '-interval']:
+                if i + 1 < len(parts):
+                    arguments['interval'] = float(parts[i+1])
+                i += 2
+            else:
+                i += 1
+        return arguments
 
-        if arguments == 0:
-            messages = await start_scraper_once()
-        else: 
-            messages = await start_scraper_once(arguments)
-        
+    if message.content.lower().startswith('!check'):
+        await message.channel.send('Running price check...')
+        args = get_arguments(message.content)
+        messages = await start_scraper_once(arguments=args)
         result_block = "\n".join(messages)
 
-        if len(result_block) <= 1900:
-            await message.channel.send(f"\n{result_block}\n")
-        else:
-            for i in range(0, len(result_block), 1900):
-                chunk = result_block[i:i+1900]
-                await message.channel.send(f"\n{chunk}\n")
+        for i in range(0, len(result_block), 1900):
+            chunk = result_block[i:i+1900]
+            await message.channel.send(f"\n{chunk}\n")
 
-        await message.channel.send('\nPrice check complete!')
-        
-    if message.content.lower().startswith('!daemon'):
-        args = get_arguments(message.content) 
+        await message.channel.send('Price check complete!')
+
+    elif message.content.lower().startswith('!daemon'):
+        args = get_arguments(message.content)
         asyncio.create_task(start_daemon(message.channel, arguments=args))
         await message.channel.send("Daemon started in the background!")
-    
-    
-    if message.content.lower().startswith('!help'):
+
+    elif message.content.lower().startswith('!help'):
         help_text = f"""**Ebay Monitor Bot Commands**
 
-        `!check`  – Run a one-time price check on all enabled products.
-        `!check -p <product> -price <your_price> -del <delivery_cost>` – Run a one-time price check with custom flags.
-        `!daemon` – Start continuous monitoring (checks every {CHECK_INTERVAL} seconds) in this channel.
-        `!daemon -i <seconds>` – Start daemon with a custom interval between checks
-        `!help`   – Show this help message.
-        """
+`!check`  
+ – Run a one-time price check on all enabled products.
+
+`!check -p <product_name> -price <your_price> -del <delivery_cost>`  
+ – Run a one-time price check on a specific product.  
+  • `-p` / `product` → Name of the product (supports multi-word names, e.g., "retimax 1500")  
+  • `-price` → Your price to compare against  
+  • `-del` / `-delivery` → Delivery cost
+
+`!daemon`  
+ – Start continuous monitoring in this channel (checks every {CHECK_INTERVAL} seconds by default).  
+
+`!daemon -p <product_name> -price <your_price> -del <delivery_cost> -i <seconds>`  
+ – Start daemon with optional custom product flags and custom interval between checks.
+
+`!help`  
+ – Show this help message.
+"""
         await message.channel.send(help_text)
-   
          
 
 
