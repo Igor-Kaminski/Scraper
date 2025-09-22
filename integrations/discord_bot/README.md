@@ -52,6 +52,16 @@ You should see a login message in the console.
 - `!daemon` — Starts continuous monitoring at `CHECK_INTERVAL` seconds (set in `monitor/config.py`)
   - Stop the daemon with `Ctrl+C` in the terminal running the bot
 
+### Flags
+- `-p` or `product`: Product name (supports multi-word names)
+- `-price` or `price`: Your price to compare against
+- `-del`, `delivery`, or `delievery`: Delivery cost
+- `-i` or `-interval`: Interval in seconds (for `!daemon`)
+
+### Examples
+- `!check -p retimax 1500 -price 6.95 -del 0`
+- `!daemon -p retimax 1500 -price 6.95 -del 0 -i 1800`
+
 ## Configuration Notes
 - Products are defined in `monitor/config.py` (`PRODUCTS` array)
 - Check frequency is `CHECK_INTERVAL` in `monitor/config.py`
@@ -68,4 +78,4 @@ You should see a login message in the console.
 
 ## Security
 - Never commit your token to version control
-- Rotate the token immediately if leaked 
+- Rotate the token immediately if leaked

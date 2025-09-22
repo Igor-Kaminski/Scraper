@@ -100,7 +100,6 @@ python run_scraper.py
 # Output: Starting async daemon - checking every 3600 seconds
 # Press Ctrl+C to stop
 ```
-
 ### **Discord Bot (Optional)**
 - You can control the scraper and receive results directly in Discord.
 - Quick start: set `DISCORD_BOT_TOKEN` in `.env`, set `RUN_CHANNEL_ID` in `monitor/config.py`, then run:
@@ -108,6 +107,17 @@ python run_scraper.py
 python run_bot.py
 ```
 - For full setup and detailed instructions, see the Discord guide: [Discord Bot Setup Guide](integrations/discord_bot/README.md)
+
+- Commands and flags:
+  - `!check` — one-time check. Flags:
+    - `-p` or `product` — Product name (supports multi-word)
+    - `-price` or `price` — Your price
+    - `-del`, `delivery`, or `delievery` — Delivery cost
+  - `!daemon` — continuous monitoring. Optional flags:
+    - Same as above, plus `-i` or `-interval` — Interval in seconds between checks
+  - Examples:
+    - `!check -p retimax 1500 -price 6.95 -del 0`
+    - `!daemon -p retimax 1500 -price 6.95 -del 0 -i 1800`
 
 ### **What Happens**
 1. **Checks each enabled product** in your PRODUCTS list
