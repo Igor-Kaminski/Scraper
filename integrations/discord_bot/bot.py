@@ -127,8 +127,8 @@ def get_arguments(message):
 
     return arguments
 
-    
-        
+
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -179,6 +179,7 @@ async def on_message(message):
         `!check`  – Run a one-time price check on all enabled products.
         `!check -p <product> -price <your_price> -del <delivery_cost>` – Run a one-time price check with custom flags.
         `!daemon` – Start continuous monitoring (checks every {CHECK_INTERVAL} seconds) in this channel.
+        `!daemon -i <seconds>` – Start daemon with a custom interval between checks
         `!help`   – Show this help message.
         """
         await message.channel.send(help_text)
