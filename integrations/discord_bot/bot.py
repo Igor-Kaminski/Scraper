@@ -2,8 +2,7 @@
 Discord bot with scraper logic
 '''
 
-from ast import arguments
-from itertools import product
+
 from monitor import EbayScraper, parse_listings, PRODUCTS, RUN_CHANNEL_ID, LOG_CHANNEL_ID, DISCORD_BOT_TOKEN, CHECK_INTERVAL
 import discord
 import asyncio
